@@ -1,511 +1,393 @@
 // ============================================================
-// ROTA EXPRESS — Dados de exemplo (domínio do app de corridas)
+// DADOS DE EXEMPLO — Rota Express
+// Domínio: Corridas e entregas de moto em São Paulo/SP
 // ============================================================
 
 export interface Endereco {
-  rua: string;
-  numero: string;
-  bairro: string;
-  cidade: string;
-  cep: string;
-  referencia?: string;
-}
-
-export interface Cliente {
-  id: string;
-  nome: string;
-  telefone: string;
-  email: string;
-  foto: string;
-  enderecoFavorito?: Endereco;
-  avaliacaoMedia: number;
-  totalCorridas: number;
+  rua: string
+  numero: string
+  bairro: string
+  cidade: string
+  complemento?: string
+  referencia?: string
 }
 
 export interface Motorista {
-  id: string;
-  nome: string;
-  telefone: string;
-  cnh: string;
-  foto: string;
-  moto: {
-    modelo: string;
-    placa: string;
-    cor: string;
-    ano: number;
-  };
-  disponivel: boolean;
-  emCorrida: boolean;
-  localizacaoAtual: {
-    lat: number;
-    lng: number;
-  };
-  avaliacaoMedia: number;
-  totalCorridas: number;
-  faturamentoMes: number;
+  id: string
+  nome: string
+  foto: string
+  cnh: string
+  placaMoto: string
+  modeloMoto: string
+  avaliacao: number
+  corridasRealizadas: number
+  status: 'disponivel' | 'ocupado' | 'offline'
+  telefone: string
 }
 
-export type TipoServico = 'corrida' | 'entrega';
-
-export type StatusCorrida =
-  | 'solicitada'
-  | 'buscar_motorista'
-  | 'motorista_encontrado'
-  | 'a_caminho'
-  | 'aguardando_entrega'
-  | 'em_andamento'
-  | 'concluida'
-  | 'cancelada';
-
-export interface ItemEntrega {
-  descricao: string;
-  quantidade: number;
-  peso?: string;
-  dimensoes?: string;
-  fragil?: boolean;
+export interface Cliente {
+  id: string
+  nome: string
+  telefone: string
+  email: string
+  enderecoFavorito?: Endereco
 }
 
-export interface Corrida {
-  id: string;
-  tipo: TipoServico;
-  clienteId: string;
-  motoristaId?: string;
-  origem: Endereco;
-  destino: Endereco;
-  itensEntrega?: ItemEntrega[];
-  status: StatusCorrida;
-  valorEstimado: number;
-  valorFinal?: number;
-  formaPagamento: 'pix' | 'dinheiro' | 'cartao';
-  observacoes?: string;
-  distanciaKm: number;
-  tempoEstimadoMin: number;
-  criadaEm: string;
-  iniciadaEm?: string;
-  finalizadaEm?: string;
-  canceladaEm?: string;
-  motivoCancelamento?: string;
+export interface Pedido {
+  id: string
+  clienteId: string
+  clienteNome: string
+  tipo: 'corrida' | 'entrega'
+  origem: Endereco
+  destino: Endereco
+  valor: number
+  status: 'pendente' | 'aceito' | 'em_andamento' | 'concluido' | 'cancelado'
+  motoristaId?: string
+  motoristaNome?: string
+  descricao?: string
+  createdAt: string
+  distanciaKm: number
+  tempoEstimadoMin: number
+  pagamento: 'pix' | 'cartao' | 'dinheiro'
 }
 
-// -------------------------------------------------------
-// ENDEREÇOS DE EXEMPLO (São Paulo — SP)
-// -------------------------------------------------------
+export interface Trajeto {
+  pontos: { lat: number; lng: number; label: string }[]
+  status: 'aguardando' | 'iniciado' | 'em_rota' | 'chegou_origem' | 'chegou_destino'
+  progresso: number
+  atualizacoes: string[]
+}
 
-export const enderecos: Record<string, Endereco> = {
-  centro1: {
-    rua: 'Rua Augusta',
-    numero: '1500',
-    bairro: 'Consolação',
+// ---------- ENDEREÇOS COERENTES COM SÃO PAULO ----------
+
+export const enderecosExemplo: Record<string, Endereco> = {
+  moemaAvBoi: {
+    rua: 'Av. Ibirapuera',
+    numero: '3100',
+    bairro: 'Moema',
     cidade: 'São Paulo',
-    cep: '01304-001',
-    referencia: 'Próximo ao metrô Consolação',
+    complemento: 'Edifício Ibirapuera Tower, bloco B, apto 1201',
+    referencia: 'Próximo ao Shopping Ibirapuera',
   },
-  centro2: {
+  vilaMarianaA: {
+    rua: 'Rua Domingos de Morais',
+    numero: '2564',
+    bairro: 'Vila Mariana',
+    cidade: 'São Paulo',
+    complemento: 'Casa 3',
+    referencia: 'Esquina com Rua Sena Madureira',
+  },
+  pinheirosAvFaria: {
+    rua: 'Av. Brigadeiro Faria Lima',
+    numero: '4232',
+    bairro: 'Pinheiros',
+    cidade: 'São Paulo',
+    complemento: 'Conjunto 812',
+    referencia: 'Edifício Faria Lima Business Center',
+  },
+  consolacaoPaulista: {
     rua: 'Av. Paulista',
-    numero: '1000',
+    numero: '1578',
     bairro: 'Bela Vista',
     cidade: 'São Paulo',
-    cep: '01310-100',
-    referencia: 'Edifício Roberto Simonsen',
+    complemento: '8º andar, sala 15',
+    referencia: 'Próximo à estação Consolação do metrô',
   },
-  zonaSul1: {
-    rua: 'Rua Oscar Freire',
-    numero: '230',
-    bairro: 'Jardins',
-    cidade: 'São Paulo',
-    cep: '01426-001',
-  },
-  zonaSul2: {
-    rua: 'Av. Santo Amaro',
-    numero: '4500',
-    bairro: 'Brooklin',
-    cidade: 'São Paulo',
-    cep: '04702-002',
-    referencia: 'Shopping Morumbi',
-  },
-  zonaLeste1: {
-    rua: 'Rua Tuiuti',
-    numero: '789',
-    bairro: 'Brás',
-    cidade: 'São Paulo',
-    cep: '03009-000',
-  },
-  zonaOeste1: {
-    rua: 'Rua Cardoso de Almeida',
-    numero: '320',
-    bairro: 'Perdizes',
-    cidade: 'São Paulo',
-    cep: '05013-000',
-  },
-  zonaNorte1: {
+  santanaAvCasa: {
     rua: 'Av. Cruzeiro do Sul',
     numero: '1800',
     bairro: 'Santana',
     cidade: 'São Paulo',
-    cep: '02031-000',
-    referencia: 'Próximo ao Shopping Center Norte',
+    complemento: '',
+    referencia: 'Em frente à Casa de Pedra',
   },
-  zonaNorte2: {
-    rua: 'Rua Voluntários da Pátria',
-    numero: '560',
-    bairro: 'Santana',
-    cidade: 'São Paulo',
-    cep: '02011-000',
-  },
-  morumbi: {
-    rua: 'Av. Giovanni Gronchi',
-    numero: '5800',
-    bairro: 'Vila Andrade',
-    cidade: 'São Paulo',
-    cep: '05721-800',
-    referencia: 'Portão 3 — Condomínio Morumbi',
-  },
-  butanta: {
-    rua: 'Av. Corifeu de Azevedo Marques',
-    numero: '110',
-    bairro: 'Butantã',
-    cidade: 'São Paulo',
-    cep: '05581-000',
-    referencia: 'USP — Portaria Principal',
-  },
-  tatuape: {
-    rua: 'Rua Tatuapé',
-    numero: '910',
+  tatuapeA: {
+    rua: 'Rua Tuiuti',
+    numero: '955',
     bairro: 'Tatuapé',
     cidade: 'São Paulo',
-    cep: '03084-000',
+    complemento: 'Cobertura duplex',
+    referencia: 'Próximo ao Shopping Metrô Tatuapé',
   },
-  moema: {
-    rua: 'Alameda dos Nhocarás',
-    numero: '450',
-    bairro: 'Moema',
+  butantaAv: {
+    rua: 'Av. Corifeu de Azevedo Marques',
+    numero: '3995',
+    bairro: 'Butantã',
     cidade: 'São Paulo',
-    cep: '04089-011',
+    complemento: 'Bloco C',
+    referencia: 'Próximo ao CEUB São Paulo',
+  },
+  liberdadeRua: {
+    rua: 'Rua da Glória',
+    numero: '322',
+    bairro: 'Liberdade',
+    cidade: 'São Paulo',
+    complemento: 'Loja 7',
+    referencia: 'Próximo à estação Liberdade do metrô',
   },
 }
 
-// -------------------------------------------------------
-// CLIENTES
-// -------------------------------------------------------
-
-export const clientes: Cliente[] = [
-  {
-    id: 'cli-001',
-    nome: 'Mariana Costa Silva',
-    telefone: '(11) 98765-4321',
-    email: 'mariana.silva@email.com',
-    foto: 'https://i.pravatar.cc/150?u=mariana',
-    enderecoFavorito: enderecos.centro1,
-    avaliacaoMedia: 4.8,
-    totalCorridas: 34,
-  },
-  {
-    id: 'cli-002',
-    nome: 'Carlos Eduardo Oliveira',
-    telefone: '(11) 97654-3210',
-    email: 'carlos.oliveira@email.com',
-    foto: 'https://i.pravatar.cc/150?u=carlos',
-    enderecoFavorito: enderecos.zonaSul2,
-    avaliacaoMedia: 4.5,
-    totalCorridas: 12,
-  },
-  {
-    id: 'cli-003',
-    nome: 'Fernanda Lima Pereira',
-    telefone: '(11) 96543-2109',
-    email: 'fernanda.lima@email.com',
-    foto: 'https://i.pravatar.cc/150?u=fernanda',
-    enderecoFavorito: enderecos.moema,
-    avaliacaoMedia: 5.0,
-    totalCorridas: 8,
-  },
-  {
-    id: 'cli-004',
-    nome: 'João Pedro Santos',
-    telefone: '(11) 95432-1098',
-    email: 'joao.santos@email.com',
-    foto: 'https://i.pravatar.cc/150?u=joao',
-    enderecoFavorito: enderecos.zonaNorte1,
-    avaliacaoMedia: 4.2,
-    totalCorridas: 21,
-  },
-]
-
-// -------------------------------------------------------
-// MOTORISTAS
-// -------------------------------------------------------
+// ---------- MOTORISTAS ----------
 
 export const motoristas: Motorista[] = [
   {
     id: 'mot-001',
-    nome: 'Ricardo Almeida Souza',
-    telefone: '(11) 99888-7766',
-    cnh: '12345678901',
-    foto: 'https://i.pravatar.cc/150?u=ricardo',
-    moto: {
-      modelo: 'Honda CG 160 Titan',
-      placa: 'BRA2E19',
-      cor: 'Vermelha',
-      ano: 2022,
-    },
-    disponivel: true,
-    emCorrida: false,
-    localizacaoAtual: { lat: -23.5613, lng: -46.6560 },
-    avaliacaoMedia: 4.9,
-    totalCorridas: 127,
-    faturamentoMes: 4850.0,
+    nome: 'Ricardo Mendes',
+    foto: 'https://i.pravatar.cc/150?img=11',
+    cnh: 'SP-12.345.678',
+    placaMoto: 'BRA-2E19',
+    modeloMoto: 'Honda CG 160 Fan',
+    avaliacao: 4.8,
+    corridasRealizadas: 342,
+    status: 'disponivel',
+    telefone: '(11) 98765-4321',
   },
   {
     id: 'mot-002',
-    nome: 'Diego Fernandes Rocha',
-    telefone: '(11) 98777-6655',
-    cnh: '98765432100',
-    foto: 'https://i.pravatar.cc/150?u=diego',
-    moto: {
-      modelo: 'Yamaha Fazer FZ15',
-      placa: 'FGH3I45',
-      cor: 'Preta',
-      ano: 2023,
-    },
-    disponivel: false,
-    emCorrida: true,
-    localizacaoAtual: { lat: -23.5889, lng: -46.6822 },
-    avaliacaoMedia: 4.6,
-    totalCorridas: 83,
-    faturamentoMes: 3620.0,
+    nome: 'Fernanda Oliveira',
+    foto: 'https://i.pravatar.cc/150?img=5',
+    cnh: 'SP-23.456.789',
+    placaMoto: 'BRA-5F32',
+    modeloMoto: 'Yamaha NEO 125',
+    avaliacao: 4.9,
+    corridasRealizadas: 218,
+    status: 'disponivel',
+    telefone: '(11) 97654-3210',
   },
   {
     id: 'mot-003',
-    nome: 'Paulo Henrique Dias',
-    telefone: '(11) 97666-5544',
-    cnh: '45678912300',
-    foto: 'https://i.pravatar.cc/150?u=paulo',
-    moto: {
-      modelo: 'Honda Biz 125',
-      placa: 'JKL4M56',
-      cor: 'Branca',
-      ano: 2021,
-    },
-    disponivel: true,
-    emCorrida: false,
-    localizacaoAtual: { lat: -23.5342, lng: -46.6498 },
-    avaliacaoMedia: 4.7,
-    totalCorridas: 210,
-    faturamentoMes: 7200.0,
+    nome: 'Carlos Eduardo Rocha',
+    foto: 'https://i.pravatar.cc/150?img=12',
+    cnh: 'SP-34.567.890',
+    placaMoto: 'BRA-7G44',
+    modeloMoto: 'Honda Biz 125',
+    avaliacao: 4.6,
+    corridasRealizadas: 156,
+    status: 'ocupado',
+    telefone: '(11) 96543-2109',
   },
   {
     id: 'mot-004',
-    nome: 'Lucas Vinícius Barros',
-    telefone: '(11) 96555-4433',
-    cnh: '32165498711',
-    foto: 'https://i.pravatar.cc/150?u=lucas',
-    moto: {
-      modelo: 'Honda Pop 110i',
-      placa: 'MNO5P67',
-      cor: 'Azul',
-      ano: 2024,
-    },
-    disponivel: true,
-    emCorrida: false,
-    localizacaoAtual: { lat: -23.5489, lng: -46.6389 },
-    avaliacaoMedia: 4.3,
-    totalCorridas: 15,
-    faturamentoMes: 980.0,
+    nome: 'Juliana Santos',
+    foto: 'https://i.pravatar.cc/150?img=9',
+    cnh: 'SP-45.678.901',
+    placaMoto: 'BRA-1H55',
+    modeloMoto: 'Suzuki Yes 125',
+    avaliacao: 4.7,
+    corridasRealizadas: 289,
+    status: 'offline',
+    telefone: '(11) 95432-1098',
+  },
+  {
+    id: 'mot-005',
+    nome: 'André Luiz Pereira',
+    foto: 'https://i.pravatar.cc/150?img=15',
+    cnh: 'SP-56.789.012',
+    placaMoto: 'BRA-3J66',
+    modeloMoto: 'Honda CG 160 Start',
+    avaliacao: 4.5,
+    corridasRealizadas: 97,
+    status: 'disponivel',
+    telefone: '(11) 94321-0987',
   },
 ]
 
-// -------------------------------------------------------
-// CORRIDAS (histórico + em andamento)
-// -------------------------------------------------------
+// ---------- CLIENTES ----------
 
-export const corridas: Corrida[] = [
+export const clientes: Cliente[] = [
   {
-    id: 'cor-001',
-    tipo: 'corrida',
+    id: 'cli-001',
+    nome: 'Mariana Costa',
+    telefone: '(11) 99876-5432',
+    email: 'mariana.costa@email.com',
+    enderecoFavorito: enderecosExemplo.moemaAvBoi,
+  },
+  {
+    id: 'cli-002',
+    nome: 'Paulo Henrique Silva',
+    telefone: '(11) 98765-1234',
+    email: 'paulo.silva@email.com',
+    enderecoFavorito: enderecosExemplo.consolacaoPaulista,
+  },
+  {
+    id: 'cli-003',
+    nome: 'Fernanda Lima',
+    telefone: '(11) 97654-2345',
+    email: 'fernanda.lima@email.com',
+    enderecoFavorito: enderecosExemplo.pinheirosAvFaria,
+  },
+  {
+    id: 'cli-004',
+    nome: 'Roberto Almeida',
+    telefone: '(11) 96543-3456',
+    email: 'roberto.almeida@email.com',
+  },
+]
+
+// ---------- PEDIDOS (CORRIDAS E ENTREGAS) ----------
+
+export const pedidos: Pedido[] = [
+  {
+    id: 'ped-001',
     clienteId: 'cli-001',
+    clienteNome: 'Mariana Costa',
+    tipo: 'corrida',
+    origem: enderecosExemplo.vilaMarianaA,
+    destino: enderecosExemplo.moemaAvBoi,
+    valor: 22.5,
+    status: 'aceito',
     motoristaId: 'mot-001',
-    origem: enderecos.butanta,
-    destino: enderecos.zonaSul1,
+    motoristaNome: 'Ricardo Mendes',
+    createdAt: '2025-07-14T09:15:00',
+    distanciaKm: 5.8,
+    tempoEstimadoMin: 18,
+    pagamento: 'pix',
+  },
+  {
+    id: 'ped-002',
+    clienteId: 'cli-002',
+    clienteNome: 'Paulo Henrique Silva',
+    tipo: 'entrega',
+    origem: enderecosExemplo.consolacaoPaulista,
+    destino: enderecosExemplo.tatuapeA,
+    valor: 34.9,
     status: 'em_andamento',
-    valorEstimado: 28.5,
-    formaPagamento: 'pix',
-    distanciaKm: 8.3,
-    tempoEstimadoMin: 22,
-    criadaEm: '2025-01-15T14:32:00',
-    iniciadaEm: '2025-01-15T14:35:00',
-  },
-  {
-    id: 'cor-002',
-    tipo: 'entrega',
-    clienteId: 'cli-002',
-    motoristaId: 'mot-002',
-    origem: enderecos.centro1,
-    destino: enderecos.zonaNorte1,
-    itensEntrega: [
-      {
-        descricao: 'Documentos empresariais',
-        quantidade: 1,
-        peso: '500g',
-        dimensoes: '30x20x5cm',
-        fragil: false,
-      },
-    ],
-    status: 'a_caminho',
-    valorEstimado: 35.0,
-    valorFinal: 35.0,
-    formaPagamento: 'cartao',
-    observacoes: 'Deixar com a recepção',
-    distanciaKm: 11.5,
-    tempoEstimadoMin: 30,
-    criadaEm: '2025-01-15T13:10:00',
-    iniciadaEm: '2025-01-15T13:15:00',
-  },
-  {
-    id: 'cor-003',
-    tipo: 'corrida',
-    clienteId: 'cli-003',
-    origem: enderecos.moema,
-    destino: enderecos.centro2,
-    status: 'solicitada',
-    valorEstimado: 42.0,
-    formaPagamento: 'dinheiro',
-    distanciaKm: 14.2,
-    tempoEstimadoMin: 35,
-    criadaEm: '2025-01-15T15:00:00',
-  },
-  {
-    id: 'cor-004',
-    tipo: 'entrega',
-    clienteId: 'cli-004',
-    motoristaId: 'mot-001',
-    origem: enderecos.zonaLeste1,
-    destino: enderecos.morumbi,
-    itensEntrega: [
-      {
-        descricao: 'Caixa com peças de computador',
-        quantidade: 1,
-        peso: '5kg',
-        dimensoes: '50x40x30cm',
-        fragil: true,
-      },
-      {
-        descricao: 'Manual do usuário',
-        quantidade: 2,
-        peso: '200g cada',
-      },
-    ],
-    status: 'concluida',
-    valorEstimado: 55.0,
-    valorFinal: 55.0,
-    formaPagamento: 'pix',
-    observacoes: 'Cuidado com peças frágeis',
-    distanciaKm: 22.7,
-    tempoEstimadoMin: 55,
-    criadaEm: '2025-01-15T09:00:00',
-    iniciadaEm: '2025-01-15T09:08:00',
-    finalizadaEm: '2025-01-15T09:55:00',
-  },
-  {
-    id: 'cor-005',
-    tipo: 'corrida',
-    clienteId: 'cli-001',
-    origem: enderecos.zonaSul2,
-    destino: enderecos.zonaOeste1,
-    status: 'cancelada',
-    valorEstimado: 38.0,
-    formaPagamento: 'cartao',
-    distanciaKm: 16.8,
-    tempoEstimadoMin: 40,
-    criadaEm: '2025-01-15T11:20:00',
-    canceladaEm: '2025-01-15T11:22:00',
-    motivoCancelamento: 'Cliente desistiu — encontrou outra opção',
-  },
-  {
-    id: 'cor-006',
-    tipo: 'entrega',
-    clienteId: 'cli-002',
     motoristaId: 'mot-003',
-    origem: enderecos.zonaNorte2,
-    destino: enderecos.tatuape,
-    itensEntrega: [
-      {
-        descricao: 'Flores — arranjo de rosas',
-        quantidade: 1,
-        peso: '1kg',
-        fragil: true,
-      },
-    ],
-    status: 'aguardando_entrega',
-    valorEstimado: 25.0,
-    valorFinal: 25.0,
-    formaPagamento: 'pix',
-    observacoes: 'Entregar até 17h — aniversário',
-    distanciaKm: 9.4,
-    tempoEstimadoMin: 25,
-    criadaEm: '2025-01-15T12:00:00',
-    iniciadaEm: '2025-01-15T12:05:00',
+    motoristaNome: 'Carlos Eduardo Rocha',
+    descricao: 'Pacote com documentos — tamanho 30x20x10cm, cuidado frágil',
+    createdAt: '2025-07-14T10:42:00',
+    distanciaKm: 9.3,
+    tempoEstimadoMin: 28,
+    pagamento: 'cartao',
   },
   {
-    id: 'cor-007',
-    tipo: 'corrida',
+    id: 'ped-003',
     clienteId: 'cli-003',
-    origem: enderecos.centro1,
-    destino: enderecos.morumbi,
-    status: 'motorista_encontrado',
-    valorEstimado: 45.0,
-    formaPagamento: 'pix',
-    distanciaKm: 18.1,
-    tempoEstimadoMin: 42,
-    criadaEm: '2025-01-15T15:05:00',
+    clienteNome: 'Fernanda Lima',
+    tipo: 'corrida',
+    origem: enderecosExemplo.pinheirosAvFaria,
+    destino: enderecosExemplo.butantaAv,
+    valor: 18.0,
+    status: 'pendente',
+    createdAt: '2025-07-14T11:05:00',
+    distanciaKm: 7.1,
+    tempoEstimadoMin: 22,
+    pagamento: 'dinheiro',
+  },
+  {
+    id: 'ped-004',
+    clienteId: 'cli-004',
+    clienteNome: 'Roberto Almeida',
+    tipo: 'entrega',
+    origem: enderecosExemplo.liberdadeRua,
+    destino: enderecosExemplo.santanaAvCasa,
+    valor: 28.75,
+    status: 'pendente',
+    descricao: 'Caixa de presente — 40x30x20cm, não virar',
+    createdAt: '2025-07-14T11:20:00',
+    distanciaKm: 12.5,
+    tempoEstimadoMin: 35,
+    pagamento: 'pix',
+  },
+  {
+    id: 'ped-005',
+    clienteId: 'cli-001',
+    clienteNome: 'Mariana Costa',
+    tipo: 'corrida',
+    origem: enderecosExemplo.moemaAvBoi,
+    destino: enderecosExemplo.vilaMarianaA,
+    valor: 22.5,
+    status: 'concluido',
+    motoristaId: 'mot-002',
+    motoristaNome: 'Fernanda Oliveira',
+    createdAt: '2025-07-14T08:00:00',
+    distanciaKm: 5.8,
+    tempoEstimadoMin: 18,
+    pagamento: 'pix',
+  },
+  {
+    id: 'ped-006',
+    clienteId: 'cli-002',
+    clienteNome: 'Paulo Henrique Silva',
+    tipo: 'corrida',
+    origem: enderecosExemplo.tatuapeA,
+    destino: enderecosExemplo.consolacaoPaulista,
+    valor: 30.0,
+    status: 'concluido',
+    motoristaId: 'mot-001',
+    motoristaNome: 'Ricardo Mendes',
+    createdAt: '2025-07-13T19:30:00',
+    distanciaKm: 9.3,
+    tempoEstimadoMin: 28,
+    pagamento: 'cartao',
+  },
+  {
+    id: 'ped-007',
+    clienteId: 'cli-003',
+    clienteNome: 'Fernanda Lima',
+    tipo: 'corrida',
+    origem: enderecosExemplo.butantaAv,
+    destino: enderecosExemplo.pinheirosAvFaria,
+    valor: 18.0,
+    status: 'cancelado',
+    createdAt: '2025-07-13T17:10:00',
+    distanciaKm: 7.1,
+    tempoEstimadoMin: 22,
+    pagamento: 'dinheiro',
   },
 ]
 
-// -------------------------------------------------------
-// HELPERS DE FORMATAÇÃO
-// -------------------------------------------------------
+// ---------- TRAJETOS ATIVOS ----------
 
-export function formatarMoeda(valor: number): string {
-  return valor.toLocaleString('pt-BR', {
-    style: 'currency',
-    currency: 'BRL',
-  })
+export const trajetosAtivos: Record<string, Trajeto> = {
+  'ped-002': {
+    pontos: [
+      { lat: -23.5680, lng: -46.6698, label: 'Origem: Consolação, Av. Paulista 1578' },
+      { lat: -23.5850, lng: -46.5710, label: 'Parada intermediária: Rua Tuiuti, Tatuapé' },
+      { lat: -23.5990, lng: -46.5480, label: 'Destino: Tatuapé, Rua Tuiuti 955' },
+    ],
+    status: 'em_rota',
+    progresso: 65,
+    atualizacoes: [
+      'Pedido aceito por Carlos Eduardo',
+      'Motorista a caminho do endereço de coleta',
+      'Pacote coletado — a caminho do destino',
+      'Chegando ao destino em aproximadamente 10 minutos',
+    ],
+  },
 }
 
-export function formatarDataHora(iso: string): string {
-  const d = new Date(iso)
-  return d.toLocaleString('pt-BR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+// ---------- BAIRROS POPULARES PARA AUTOCOMPLETAR ----------
+
+export const bairrosSP: string[] = [
+  'Moema', 'Vila Mariana', 'Pinheiros', 'Consolação', 'Bela Vista',
+  'Santana', 'Tatuapé', 'Butantã', 'Liberdade', 'Perdizes',
+  'Jardins', 'Cambuci', 'Brás', 'República', 'Lapa',
+  'Alto de Pinheiros', 'Saúde', 'Cursino', 'Aclimação', 'Cambuci',
+  'Vila Olímpia', 'Itaim Bibi', 'Brooklin', 'Morumbi', 'Santo Amaro',
+]
+
+// ---------- MENSAGEM DE STATUS ----------
+
+export const statusLabels: Record<string, string> = {
+  pendente: 'Pendente',
+  aceito: 'Aceito',
+  em_andamento: 'Em andamento',
+  concluido: 'Concluído',
+  cancelado: 'Cancelado',
 }
 
-export function formatarCEP(cep: string): string {
-  return cep.replace(/^(\d{5})(\d{3})$/, '$1-$2')
-}
+// ---------- ESTATÍSTICAS PARA O PAINEL ADMIN ----------
 
-// -------------------------------------------------------
-// LOOKUPS CONVENIENCE
-// -------------------------------------------------------
-
-export function buscarCliente(id: string): Cliente | undefined {
-  return clientes.find(c => c.id === id)
-}
-
-export function buscarMotorista(id: string): Motorista | undefined {
-  return motoristas.find(m => m.id === id)
-}
-
-export function buscarCorrida(id: string): Corrida | undefined {
-  return corridas.find(c => c.id === id)
-}
-
-export function corridasPorMotorista(id: string): Corrida[] {
-  return corridas.filter(c => c.motoristaId === id)
-}
-
-export function corridasPorCliente(id: string): Corrida[] {
-  return corridas.filter(c => c.clienteId === id)
+export const estatisticasAdmin = {
+  corridasHoje: 14,
+  corridasMes: 218,
+  faturamentoHoje: 486.75,
+  faturamentoMes: 7420.50,
+  motoristasAtivos: 3,
+  motoristasTotal: 5,
+  clientesAtivos: 27,
+  pedidosPendentes: 2,
+  pedidosEmAndamento: 1,
+  avaliacaoMedia: 4.7,
 }
